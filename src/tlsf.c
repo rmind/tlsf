@@ -677,18 +677,3 @@ tlsf_avail_space(tlsf_t *tlsf)
 	len = roundup2(len + 1, TLSF_MBS) - TLSF_MBS;
 	return (len + 1) - (1UL << (ilog2(len) - TLSF_SLI_SHIFT));
 }
-
-void
-tlsf_diagnostic(tlsf_t *tlsf, bool dump)
-{
-	tlsf_blk_t *blk = tlsf->baseptr;
-
-	while (blk) {
-		if (dump) {
-			printf("BLOCK %p LEN %lu FREE %d\n",
-			    blk, block_length(blk), block_free_p(blk));
-		}
-		ASSERT(validate_blkhdr(tlsf, blk));
-		blk = get_next_physblk(tlsf, blk);
-	}
-}

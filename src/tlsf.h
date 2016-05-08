@@ -25,7 +25,6 @@ void		tlsf_destroy(tlsf_t *);
 
 size_t		tlsf_avail_space(tlsf_t *);
 size_t		tlsf_unused_space(tlsf_t *);
-void		tlsf_diagnostic(tlsf_t *, bool);
 
 void *		tlsf_alloc(tlsf_t *, size_t);
 void		tlsf_free(tlsf_t *, void *);

@@ -140,6 +140,10 @@ flsll(unsigned long long x)
 #define	flsll(x)	flsl(x)
 #endif
 
+#ifndef ffsl
+#define	ffsl(x)		__builtin_ffs(x)
+#endif
+
 #ifndef ilog2
 #define	ilog2(x)	(flsl(x) - 1)
 #endif
