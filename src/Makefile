@@ -6,6 +6,10 @@ CFLAGS=		-std=gnu99 -O2 -flto -g -W -Wextra -Werror -D_BSD_SOURCE
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith
 CFLAGS+=	-Wshadow -Wcast-qual -Wwrite-strings
 
+ifeq ($(MAKECMDGOALS),tests)
+DEBUG=		1
+endif
+
 ifeq ($(DEBUG),1)
 CFLAGS+=	-O0 -DDEBUG -fno-omit-frame-pointer
 else
@@ -40,8 +44,12 @@ install: $(addprefix install/,$(LIB).la)
 	mkdir -p $(IINCDIR) && install -c $(INCS) $(IINCDIR)
 	#mkdir -p $(IMANDIR) && install -c $(MANS) $(IMANDIR)
 
+tests: $(OBJS) t_tlsf.o
+	$(CC) $(CFLAGS) $^ -o t_tlsf
+	./t_tlsf
+
 clean:
 	libtool --mode=clean rm
-	@ rm -rf .libs *.o *.lo *.la
+	@ rm -rf .libs *.o *.lo *.la t_tlsf
 
-.PHONY: all lib install clean
+.PHONY: all lib install tests clean

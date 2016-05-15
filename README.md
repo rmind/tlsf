@@ -19,11 +19,11 @@ The implementation is written in C11 and distributed under the
 * `tlsf_t *tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)`
   * Construct a resource allocation object to manage the space starting
   at the specified base pointer of the specified length.
-  * If `exthdr` is true, then block headers will be externalised and
+  If `exthdr` is true, then block headers will be externalised and
   allocations can be made only through `tlsf_ext_alloc` and `tlsf_ext_free`.
   Note: the allocator will not attempt to access the given space;
   _malloc(3)_ will be used to allocate the block headers.
-  * If `exthdr` is false, then the given base pointer is treated as
+  If `exthdr` is false, then the given base pointer is treated as
   accessible memory and the block headers will be inlined in the
   allocated blocks of space.
 

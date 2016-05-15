@@ -20,6 +20,9 @@ be used to manage arbitrary resources, e.g. address or disk space.
 %prep
 %setup -q -n src
 
+%check
+make tests
+
 %build
 make %{?_smp_mflags} LIBDIR=%{_libdir}
 
