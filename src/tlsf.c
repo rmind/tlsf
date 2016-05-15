@@ -568,7 +568,7 @@ tlsf_ext_getaddr(const tlsf_blk_t *blk, size_t *length)
  *
  * => If 'exthdr' is true, then block headers will be externalised and
  *    allocations can be made only through tlsf_ext_{alloc,free} API.
- *    Note: the allocator will attempt to access the given space.
+ *    Note: the allocator will not attempt to access the given space.
  *
  * => If 'exthdr' is false, then the given base pointer is treated as
  *    accessible memory and the block headers will be inlined in the
