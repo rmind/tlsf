@@ -46,7 +46,7 @@ install: $(addprefix install/,$(LIB).la)
 
 tests: $(OBJS) t_tlsf.o
 	$(CC) $(CFLAGS) $^ -o t_tlsf
-	./t_tlsf
+	MALLOC_CHECK_=3 ./t_tlsf
 
 clean:
 	libtool --mode=clean rm
