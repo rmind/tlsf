@@ -2,7 +2,7 @@
 # This file is in the Public Domain.
 #
 
-CFLAGS=		-std=gnu99 -O2 -flto -g -W -Wextra -Werror -D_BSD_SOURCE
+CFLAGS=		-std=gnu99 -O2 -g -W -Wextra -Werror -D_BSD_SOURCE
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith
 CFLAGS+=	-Wshadow -Wcast-qual -Wwrite-strings
 
@@ -14,7 +14,6 @@ ifeq ($(DEBUG),1)
 CFLAGS+=	-O0 -DDEBUG -fno-omit-frame-pointer
 else
 CFLAGS+=	-DNDEBUG
-LDFLAGS=	-flto
 endif
 
 LIB=		libtlsf
