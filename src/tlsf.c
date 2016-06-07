@@ -101,7 +101,7 @@
 
 #define	TLSF_BLK_FREE		0x1UL
 
-typedef struct tlsf_blk {
+struct tlsf_blk {
 	/*
 	 * Length and:
 	 * - TLSF-EXT: real address
@@ -116,7 +116,7 @@ typedef struct tlsf_blk {
 	/* Segregation list entries. */
 	struct tlsf_blk *	next;
 	struct tlsf_blk *	prev;
-} tlsf_blk_t;
+};
 
 #define	TLSF_BLKHDR_LEN		(offsetof(tlsf_blk_t, next))
 
