@@ -11,8 +11,10 @@ Reference:
 	TLSF: a new dynamic memory allocator for real-time systems.
 	In Proc. ECRTS (2004), IEEE Computer Society, pp. 79-86.
 
-The implementation is written in C11 and distributed under the
+The implementation is written in C11 and is distributed under the
 2-clause BSD license.
+
+[![Build Status](https://travis-ci.org/rmind/tlsf.svg?branch=master)](https://travis-ci.org/rmind/tlsf)
 
 ## API
 
