@@ -146,16 +146,6 @@ struct tlsf {
 	tlsf_blk_t *		map[TLSF_FLI_MAX][TLSF_SLI_MAX];
 };
 
-#ifndef flsl
-static inline int
-flsl(unsigned long x)
-{
-	return __predict_true(x) ?
-	    (sizeof(unsigned long) * CHAR_BIT) - __builtin_clzl(x) : 0;
-}
-#endif
-#define	ilog2(x)	(flsl(x) - 1)
-
 /*
  * get_mapping: given the size return FLI and SLI.
  */
