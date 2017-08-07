@@ -1,5 +1,7 @@
 # TLSF: two-level segregated fit O(1) allocator
 
+[![Build Status](https://travis-ci.org/rmind/tlsf.svg?branch=master)](https://travis-ci.org/rmind/tlsf)
+
 TLSF: two-level segregated fit allocator which guarantees O(1) time.
 This implementation also provides a variation, let's call it _TLSF-EXT_,
 supporting the externalised block header allocation.  Therefore, it can
@@ -11,10 +13,8 @@ Reference:
 	TLSF: a new dynamic memory allocator for real-time systems.
 	In Proc. ECRTS (2004), IEEE Computer Society, pp. 79-86.
 
-The implementation is written in C11 and is distributed under the
+The implementation is written in C99 and is distributed under the
 2-clause BSD license.
-
-[![Build Status](https://travis-ci.org/rmind/tlsf.svg?branch=master)](https://travis-ci.org/rmind/tlsf)
 
 ## API
 
