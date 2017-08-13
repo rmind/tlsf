@@ -86,7 +86,7 @@
  */
 
 #ifndef ffsl
-#define	ffsl(x)		__builtin_ffs(x)
+#define	ffsl(x)		__builtin_ffsl(x)
 #endif
 
 #ifndef flsl
