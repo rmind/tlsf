@@ -8,10 +8,6 @@
 #ifndef _TLSF_H_
 #define _TLSF_H_
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-
 __BEGIN_DECLS
 
 struct tlsf;

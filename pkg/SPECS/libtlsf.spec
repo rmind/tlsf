@@ -24,7 +24,8 @@ be used to manage arbitrary resources, e.g. address or disk space.
 make tests
 
 %build
-make %{?_smp_mflags} LIBDIR=%{_libdir}
+make %{?_smp_mflags} lib \
+    LIBDIR=%{_libdir}
 
 %install
 make install \

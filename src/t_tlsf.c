@@ -4,7 +4,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <time.h>
 #include <err.h>

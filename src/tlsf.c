@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <string.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -539,7 +540,7 @@ tlsf_free(tlsf_t *tlsf, void *ptr)
 	tlsf_blk_t *blk;
 
 	ASSERT(tlsf->blk_hdr_len == TLSF_BLKHDR_LEN);
-	blk = (tlsf_blk_t *)((uint8_t *)ptr - TLSF_BLKHDR_LEN);
+	blk = (tlsf_blk_t *)(void *)((uint8_t *)ptr - TLSF_BLKHDR_LEN);
 	tlsf_ext_free(tlsf, blk);
 }
 

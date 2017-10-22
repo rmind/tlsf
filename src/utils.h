@@ -48,8 +48,10 @@
 /*
  * A regular assert (debug/diagnostic only).
  */
-#if !defined(ASSERT)
+#if defined(DEBUG)
 #define	ASSERT		assert
+#else
+#define	ASSERT(x)
 #endif
 
 /*
@@ -66,16 +68,8 @@
 #endif
 
 /*
- * Minimum, maximum and rounding macros.
+ * Rounding macro(s).
  */
-
-#ifndef MIN
-#define	MIN(x, y)	((x) < (y) ? (x) : (y))
-#endif
-
-#ifndef MAX
-#define	MAX(x, y)	((x) > (y) ? (x) : (y))
-#endif
 
 #ifndef roundup2
 #define	roundup2(x, m)	(((x) + (m) - 1) & ~((m) - 1))
