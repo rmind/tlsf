@@ -15,6 +15,39 @@
 #include "utils.h"
 
 static void
+basic_test(void)
+{
+	const size_t len = 32 + 32 + 32;
+	uint8_t space[len + 1]; // + magic byte
+	tlsf_t *tlsf;
+	void *ptr;
+
+	/* Fill the magic value. */
+	space[len] = 0xa5;
+
+	tlsf = tlsf_create((uintptr_t)&space, len, false);
+	assert(tlsf != NULL);
+
+	ptr = tlsf_alloc(tlsf, 1);
+	assert(ptr != NULL);
+	assert(tlsf_unused_space(tlsf) > 0);
+	assert(tlsf_avail_space(tlsf) > 0);
+
+	ptr = tlsf_alloc(tlsf, 1);
+	assert(ptr != NULL);
+	assert(tlsf_unused_space(tlsf) == 0);
+	assert(tlsf_avail_space(tlsf) == 0);
+
+	ptr = tlsf_alloc(tlsf, 1);
+	assert(ptr == NULL);
+
+	tlsf_destroy(tlsf);
+
+	/* Check the magic value. */
+	assert(space[len] == 0xa5);
+}
+
+static void
 random_test(const size_t spacelen, const size_t cap, bool exthdr)
 {
 	const size_t maxitems = spacelen;
@@ -108,6 +141,7 @@ int
 main(void)
 {
 	srandom(time(NULL) ^ getpid());
+	basic_test();
 	random_sizes_test(false);
 	random_sizes_test(true);
 	puts("ok");

@@ -50,20 +50,42 @@ The implementation is written in C99 and is distributed under the
   * Returns an offset (relative from the base address) and the length of
   the allocated space, given the block reference.
 
+## Caveats
+
+The allocator uses a minimum allocation unit of 32.  That is, any given
+sizes will be rounded up to the minimum block size (MBS) of 32 bytes/units.
+
 ## Example
 
-The following is an illustration of _TLSF-EXT_ use:
-
+The following is an illustration of using TLSF as a memory allocator backed
+by a memory-mapped area:
 ```c
 tlsf_t *tlsf;
-tlsf_blk_t *blk;
 void *baseptr;
+struct obj *obj;
 
 baseptr = mmap(...);
 if (baseptr == MAP_FAILED)
 	err(EXIT_FAILURE, "mmap");
 
-tlsf = tlsf_create((uintptr_t)baseptr, space, true);
+tlsf = tlsf_create(baseptr, space_size, true);
+if (!tlsf)
+	err(EXIT_FAILURE, "tlsf_create");
+
+obj = tlsf_alloc(tlsf, sizeof(struct obj));
+...
+tlsf_free(tlsf, obj);
+```
+
+The following is an illustration of _TLSF-EXT_ use:
+```c
+tlsf_t *tlsf;
+tlsf_blk_t *blk;
+uintptr_t base_addr;
+
+base_addr = get_some_address_space();
+
+tlsf = tlsf_create(base_addr, space_size, true);
 if (!tlsf)
 	err(EXIT_FAILURE, "tlsf_create");
 
@@ -73,7 +95,7 @@ if (blk) {
 	size_t len;
 
 	off = tlsf_ext_getaddr(blk, &len);
-	do_something(baseptr, off, len);
+	do_something(base_addr, off, len);
 
 	...
 

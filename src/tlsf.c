@@ -267,10 +267,16 @@ block_hdr_alloc(tlsf_t *tlsf, tlsf_blk_t *parent, size_t len)
 		tlsf_blk_t *nblk;
 
 		/*
+		 * Acquire area after the parent for the block header
+		 * and set the length before calculating the pointers.
+		 */
+		blk = (void *)((uint8_t *)parent + TLSF_BLKHDR_LEN + plen);
+		blk->len = len;
+
+		/*
 		 * Set the previous *physical* block pointers: both for our
 		 * block and the block after the newly created block.
 		 */
-		blk = (void *)((uint8_t *)parent + TLSF_BLKHDR_LEN + plen);
 		blk->prevblk = parent;
 		nblk = get_next_physblk(tlsf, blk);
 		if (nblk) {
@@ -283,10 +289,10 @@ block_hdr_alloc(tlsf_t *tlsf, tlsf_blk_t *parent, size_t len)
 			return NULL;
 		}
 		blk = &extblk->hdr;
+		blk->len = len;
 		blk->addr = parent->addr + parent->len;
 		TAILQ_INSERT_AFTER(&tlsf->blklist, pextblk, extblk, entry);
 	}
-	blk->len = len;
 	return blk;
 }
 
@@ -571,12 +577,15 @@ tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)
 	tlsf_blk_t *blk;
 	tlsf_t *tlsf;
 
+	/* Round down to have the size aligned. */
+	size = roundup2(size + 1, TLSF_MBS) - TLSF_MBS;
+	if (size <= TLSF_MBS) {
+		return NULL;
+	}
+
 	tlsf = calloc(1, sizeof(tlsf_t));
 	if (tlsf == NULL)
 		return NULL;
-
-	/* Round down to have the size aligned. */
-	size = roundup2(size + 1, TLSF_MBS) - TLSF_MBS;
 
 	/* Initialise the TLSF object itself. */
 	tlsf->baseptr = baseptr;
@@ -652,11 +661,11 @@ tlsf_avail_space(tlsf_t *tlsf)
 		return 0;
 	}
 	blk = tlsf->map[fli][--sli];
+	ASSERT(blk);
 
 	/*
 	 * Get its length.
 	 */
-	ASSERT(blk);
 	ASSERT(validate_blkhdr(tlsf, blk));
 	len = block_length(blk);
 	ASSERT(tlsf_unused_space(tlsf) >= len);
