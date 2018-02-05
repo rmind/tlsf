@@ -28,10 +28,10 @@ The implementation is written in C99 and is distributed under the
   for an optimal default chosen by the allocator.  Currently, the default
   minimum allocation unit (represented by MBS) is 32.  That is, any given
   sizes will be rounded up to the minimum block size (MBS) of 32 bytes/units.
-  * If _mode_ is `TLSF-INT`, then the given base pointer is treated as
+  * If _mode_ is `TLSF_INT`, then the given base pointer is treated as
   accessible memory area and the block headers will be inlined within the
   allocated blocks of memory.
-  * If _mode_ is `TLSF-EXT`, then the block headers will be externalised
+  * If _mode_ is `TLSF_EXT`, then the block headers will be externalised
   and allocations can be made only through the `tlsf_ext_alloc` and
   `tlsf_ext_free` functions.  The allocator will not attempt to access the
   given space and _malloc(3)_ will be used to allocate the block headers.
