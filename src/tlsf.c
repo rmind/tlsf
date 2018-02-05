@@ -577,11 +577,14 @@ tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)
 	tlsf_blk_t *blk;
 	tlsf_t *tlsf;
 
+	/* Check the base pointer alignment. */
+	if (baseptr & (sizeof(unsigned long) - 1))
+		return NULL;
+
 	/* Round down to have the size aligned. */
 	size = roundup2(size + 1, TLSF_MBS) - TLSF_MBS;
-	if (size <= TLSF_MBS) {
+	if (size <= TLSF_MBS)
 		return NULL;
-	}
 
 	tlsf = calloc(1, sizeof(tlsf_t));
 	if (tlsf == NULL)

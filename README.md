@@ -3,9 +3,10 @@
 [![Build Status](https://travis-ci.org/rmind/tlsf.svg?branch=master)](https://travis-ci.org/rmind/tlsf)
 
 TLSF: two-level segregated fit allocator which guarantees O(1) time.
-This implementation also provides a variation, let's call it _TLSF-EXT_,
-supporting the externalised block header allocation.  Therefore, it can
-be used to manage arbitrary resources, e.g. address or disk space.
+This implementation provides two variations: _TLSF-INT_ which inlines the
+block headers and _TLSF-EXT_ which uses externalised block header allocation.
+Therefore, _TLSF-EXT_ can be used to manage arbitrary resources, e.g.
+address or disk space, unique IDs within a limited range, etc.
 
 Reference:
 
@@ -20,14 +21,16 @@ The implementation is written in C99 and is distributed under the
 
 * `tlsf_t *tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)`
   * Construct a resource allocation object to manage the space starting
-  at the specified base pointer of the specified length.
-  If `exthdr` is true, then block headers will be externalised and
-  allocations can be made only through `tlsf_ext_alloc` and `tlsf_ext_free`.
-  Note: the allocator will not attempt to access the given space;
-  _malloc(3)_ will be used to allocate the block headers.
-  If `exthdr` is false, then the given base pointer is treated as
-  accessible memory and the block headers will be inlined in the
-  allocated blocks of space.
+  at the specified base pointer of the specified length.  The base pointer
+  must be at least word aligned.  If the TLSF object allocation fails or
+  the base pointer is not aligned, then `NULL` is returned.
+  * If `exthdr` is false (the TLSF-INT case), then the given base pointer
+  is treated as accessible memory area and the block headers will be inlined
+  within the allocated blocks of memory.
+  * If `exthdr` is true (the TLSF-EXT case), then the block headers will
+  be externalised and allocations can be made only through `tlsf_ext_alloc`
+  and `tlsf_ext_free`.  The allocator will not attempt to access the given
+  space and _malloc(3)_ will be used to allocate the block headers.
 
 * `void tlsf_destroy(tlsf_t *tlsf)`
   * Destroy the TLSF object.
@@ -52,6 +55,8 @@ The implementation is written in C99 and is distributed under the
 
 ## Caveats
 
+The TLSF-INT and TLSF-EXT currently require at least word-aligned base
+pointer; it is also the alignment guarantee provided by both variations.
 The allocator uses a minimum allocation unit of 32.  That is, any given
 sizes will be rounded up to the minimum block size (MBS) of 32 bytes/units.
 
