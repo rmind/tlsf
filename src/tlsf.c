@@ -69,9 +69,9 @@
 #define	TLSF_SLI_MAX		(1UL << TLSF_SLI_SHIFT)
 
 /*
- * Minimum block size to round up the given size (for optimisation).
+ * Default minimum block size.
  */
-#define	TLSF_MBS		32
+#define	TLSF_MBS_DEFAULT	32
 
 /*
  * Each memory block is tracked using a block header.  There are two
@@ -100,7 +100,7 @@
  * - The length field stores the block length excluding the header.
  */
 
-#define	TLSF_BLK_FREE		0x1UL
+#define	TLSF_BLK_FREE		(~(SIZE_MAX >> 1))
 
 struct tlsf_blk {
 	/*
@@ -134,6 +134,7 @@ struct tlsf {
 	uintptr_t		baseptr;
 	size_t			size;
 	size_t			free;
+	unsigned		mbs;
 
 	/*
 	 * Prepended the block header length (TLSF-INT only).
@@ -239,7 +240,7 @@ validate_blkhdr(const tlsf_t *tlsf, tlsf_blk_t *blk)
 	const size_t blen = block_length(blk);
 
 	/* The block should be at least MBS, but not more than total. */
-	ASSERT(blen >= TLSF_MBS);
+	ASSERT(blen >= tlsf->mbs);
 	ASSERT(blen <= tlsf->size);
 
 	/* The block should be within the boundaries. */
@@ -453,15 +454,16 @@ merge_blocks(tlsf_t *tlsf, tlsf_blk_t *blk, tlsf_blk_t *blk2)
 tlsf_blk_t *
 tlsf_ext_alloc(tlsf_t *tlsf, size_t size)
 {
+	const unsigned mbs = tlsf->mbs;
 	unsigned fli, sli;
 	tlsf_blk_t *blk;
 	size_t target;
 
 	/*
-	 * Round up the size to TLSF_MBS and then the next size class.
+	 * Round up the size to MBS and then the next size class.
 	 * Get the FL/SL indexes of the size.
 	 */
-	size = roundup2(size, TLSF_MBS);
+	size = roundup2(size, mbs);
 	target = size + (1UL << (ilog2(size) - TLSF_SLI_SHIFT)) - 1;
 	get_mapping(target, &fli, &sli);
 
@@ -490,7 +492,7 @@ tlsf_ext_alloc(tlsf_t *tlsf, size_t size)
 	/*
 	 * If the block is larger than the threshold, then split it.
 	 */
-	if ((blk->len - size) >= (TLSF_MBS + tlsf->blk_hdr_len)) {
+	if ((blk->len - size) >= (mbs + tlsf->blk_hdr_len)) {
 		tlsf_blk_t *remblk;
 
 		remblk = split_block(tlsf, blk, size);
@@ -563,27 +565,33 @@ tlsf_ext_getaddr(const tlsf_blk_t *blk, size_t *length)
  * tlsf_create: construct a resource allocation object to manage the
  * space starting at the specified base pointer of the specified length.
  *
- * => If 'exthdr' is true, then block headers will be externalised and
+ * => If 'mode' is TLSF_EXT, then block headers will be externalised and
  *    allocations can be made only through tlsf_ext_{alloc,free} API.
  *    Note: the allocator will not attempt to access the given space.
  *
- * => If 'exthdr' is false, then the given base pointer is treated as
+ * => If 'mode' is TLSF_INT, then the given base pointer is treated as
  *    accessible memory and the block headers will be inlined in the
  *    allocated blocks of space.
  */
 tlsf_t *
-tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)
+tlsf_create(uintptr_t baseptr, size_t size, unsigned mbs, tlsf_mode_t mode)
 {
 	tlsf_blk_t *blk;
+	tlsf_extblk_t *extblk;
 	tlsf_t *tlsf;
 
 	/* Check the base pointer alignment. */
 	if (baseptr & (sizeof(unsigned long) - 1))
 		return NULL;
 
+	if (mbs < TLSF_MBS_DEFAULT) {
+		/* Enforce a minimum MBS. */
+		mbs = TLSF_MBS_DEFAULT;
+	}
+
 	/* Round down to have the size aligned. */
-	size = roundup2(size + 1, TLSF_MBS) - TLSF_MBS;
-	if (size <= TLSF_MBS)
+	size = roundup2(size + 1, mbs) - mbs;
+	if (size <= mbs)
 		return NULL;
 
 	tlsf = calloc(1, sizeof(tlsf_t));
@@ -594,12 +602,12 @@ tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)
 	tlsf->baseptr = baseptr;
 	tlsf->size = size;
 	tlsf->free = 0;
+	tlsf->mbs = mbs;
 	TAILQ_INIT(&tlsf->blklist);
 
 	/* Initialise and insert the first block. */
-	if (exthdr) {
-		tlsf_extblk_t *extblk;
-
+	switch (mode) {
+	case TLSF_EXT:
 		extblk = calloc(1, sizeof(tlsf_extblk_t));
 		if (extblk == NULL) {
 			free(tlsf);
@@ -610,11 +618,16 @@ tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)
 		blk->len = size;
 		TAILQ_INSERT_HEAD(&tlsf->blklist, extblk, entry);
 		tlsf->blk_hdr_len = 0;
-	} else {
+		break;
+	case TLSF_INT:
 		blk = (void *)baseptr;
 		blk->len = size - TLSF_BLKHDR_LEN;
 		blk->prevblk = NULL;
 		tlsf->blk_hdr_len = TLSF_BLKHDR_LEN;
+		break;
+	default:
+		free(tlsf);
+		return NULL;
 	}
 	insert_block(tlsf, blk);
 
@@ -650,6 +663,7 @@ tlsf_unused_space(tlsf_t *tlsf)
 size_t
 tlsf_avail_space(tlsf_t *tlsf)
 {
+	const unsigned mbs = tlsf->mbs;
 	unsigned fli, sli;
 	tlsf_blk_t *blk;
 	size_t len;
@@ -677,6 +691,6 @@ tlsf_avail_space(tlsf_t *tlsf)
 	 * Get the previous size class: we want to return the real
 	 * available size on which tls_alloc() would succeed.
 	 */
-	len = roundup2(len + 1, TLSF_MBS) - TLSF_MBS;
+	len = roundup2(len + 1, mbs) - mbs;
 	return (len + 1) - (1UL << (ilog2(len) - TLSF_SLI_SHIFT));
 }

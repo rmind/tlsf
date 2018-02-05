@@ -19,18 +19,22 @@ The implementation is written in C99 and is distributed under the
 
 ## API
 
-* `tlsf_t *tlsf_create(uintptr_t baseptr, size_t size, bool exthdr)`
+* `tlsf_t *tlsf_create(uintptr_t baseptr, size_t size, unsigned mbs, tlsf_mode_t mode)`
   * Construct a resource allocation object to manage the space starting
   at the specified base pointer of the specified length.  The base pointer
   must be at least word aligned.  If the TLSF object allocation fails or
   the base pointer is not aligned, then `NULL` is returned.
-  * If `exthdr` is false (the TLSF-INT case), then the given base pointer
-  is treated as accessible memory area and the block headers will be inlined
-  within the allocated blocks of memory.
-  * If `exthdr` is true (the TLSF-EXT case), then the block headers will
-  be externalised and allocations can be made only through `tlsf_ext_alloc`
-  and `tlsf_ext_free`.  The allocator will not attempt to access the given
-  space and _malloc(3)_ will be used to allocate the block headers.
+  * A custom minimum block size (MBS) can be specified; zero can be used
+  for an optimal default chosen by the allocator.  Currently, the default
+  minimum allocation unit (represented by MBS) is 32.  That is, any given
+  sizes will be rounded up to the minimum block size (MBS) of 32 bytes/units.
+  * If _mode_ is `TLSF-INT`, then the given base pointer is treated as
+  accessible memory area and the block headers will be inlined within the
+  allocated blocks of memory.
+  * If _mode_ is `TLSF-EXT`, then the block headers will be externalised
+  and allocations can be made only through the `tlsf_ext_alloc` and
+  `tlsf_ext_free` functions.  The allocator will not attempt to access the
+  given space and _malloc(3)_ will be used to allocate the block headers.
 
 * `void tlsf_destroy(tlsf_t *tlsf)`
   * Destroy the TLSF object.
@@ -55,10 +59,14 @@ The implementation is written in C99 and is distributed under the
 
 ## Caveats
 
-The TLSF-INT and TLSF-EXT currently require at least word-aligned base
-pointer; it is also the alignment guarantee provided by both variations.
+The TLSF-INT requires at word-aligned base pointer; it is also guarantees
+the word-aligned allocations.
 The allocator uses a minimum allocation unit of 32.  That is, any given
 sizes will be rounded up to the minimum block size (MBS) of 32 bytes/units.
+
+The maximum allocation size is limited to the half of the space represented
+by the s word size of the CPU architecture.  On 32-bit systems, it is 2^31
+(~2 billion) and on 64-bit systems it is 2^63.
 
 ## Example
 
@@ -73,7 +81,7 @@ baseptr = mmap(...);
 if (baseptr == MAP_FAILED)
 	err(EXIT_FAILURE, "mmap");
 
-tlsf = tlsf_create(baseptr, space_size, true);
+tlsf = tlsf_create(baseptr, space_size, 0, TLSF_INT);
 if (!tlsf)
 	err(EXIT_FAILURE, "tlsf_create");
 
@@ -90,7 +98,7 @@ uintptr_t base_addr;
 
 base_addr = get_some_address_space();
 
-tlsf = tlsf_create(base_addr, space_size, true);
+tlsf = tlsf_create(base_addr, space_size, 0, TLSF_EXT);
 if (!tlsf)
 	err(EXIT_FAILURE, "tlsf_create");
 

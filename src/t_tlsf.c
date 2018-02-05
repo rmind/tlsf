@@ -25,7 +25,7 @@ basic_test(void)
 	/* Fill the magic value. */
 	space[len] = 0xa5;
 
-	tlsf = tlsf_create((uintptr_t)&space, len, false);
+	tlsf = tlsf_create((uintptr_t)&space, len, 0, TLSF_INT);
 	assert(tlsf != NULL);
 
 	ptr = tlsf_alloc(tlsf, 1);
@@ -48,7 +48,7 @@ basic_test(void)
 }
 
 static void
-random_test(const size_t spacelen, const size_t cap, bool exthdr)
+random_test(const size_t spacelen, const size_t cap, tlsf_mode_t mode)
 {
 	const size_t maxitems = spacelen;
 	size_t len, bytesfree;
@@ -66,7 +66,7 @@ random_test(const size_t spacelen, const size_t cap, bool exthdr)
 		err(EXIT_FAILURE, "malloc");
 	}
 
-	tlsf = tlsf_create((uintptr_t)space, spacelen, exthdr);
+	tlsf = tlsf_create((uintptr_t)space, spacelen, 0, mode);
 	assert(tlsf != NULL);
 	bytesfree = tlsf_unused_space(tlsf);
 
@@ -76,14 +76,16 @@ random_test(const size_t spacelen, const size_t cap, bool exthdr)
 	 */
 	for (;;) {
 		len = (random() % cap) + 1;
-		p[i] = exthdr ?
+		p[i] = (mode == TLSF_EXT) ?
 		    tlsf_ext_alloc(tlsf, len) :
 		    tlsf_alloc(tlsf, len);
 		if (!p[i])
 			break;
 
 		/* Fill with magic (only when testing up to 1MB). */
-		data = exthdr ? (void *)tlsf_ext_getaddr(p[i], NULL) : p[i];
+		data = (mode == TLSF_EXT) ?
+		    (void *)tlsf_ext_getaddr(p[i], NULL) :
+		    p[i];
 		if (spacelen <= 1024 * 1024) {
 			memset(data, 0, len);
 		}
@@ -101,11 +103,11 @@ random_test(const size_t spacelen, const size_t cap, bool exthdr)
 		unsigned target = random() % i;
 		if (p[target] == NULL)
 			continue;
-		data = exthdr ?
+		data = (mode == TLSF_EXT) ?
 		    (void *)tlsf_ext_getaddr(p[target], NULL) :
 		    p[target];
 		assert(data[0] == 0xa5);
-		if (exthdr) {
+		if (mode == TLSF_EXT) {
 			tlsf_ext_free(tlsf, p[target]);
 		} else {
 			tlsf_free(tlsf, p[target]);
@@ -121,7 +123,7 @@ random_test(const size_t spacelen, const size_t cap, bool exthdr)
 }
 
 static void
-random_sizes_test(bool exthdr)
+random_sizes_test(tlsf_mode_t mode)
 {
 	const size_t sizes[] = {
 		128, 1024, 1024 * 1024, 128 * 1024 * 1024
@@ -132,7 +134,7 @@ random_sizes_test(bool exthdr)
 
 		while (n--) {
 			size_t cap = random() % sizes[i] + 1;
-			random_test(sizes[i], cap, exthdr);
+			random_test(sizes[i], cap, mode);
 		}
 	}
 }
@@ -142,8 +144,8 @@ main(void)
 {
 	srandom(time(NULL) ^ getpid());
 	basic_test();
-	random_sizes_test(false);
-	random_sizes_test(true);
+	random_sizes_test(TLSF_INT);
+	random_sizes_test(TLSF_EXT);
 	puts("ok");
 	return 0;
 }

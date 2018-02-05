@@ -16,7 +16,12 @@ typedef struct tlsf tlsf_t;
 struct tlsf_blk;
 typedef struct tlsf_blk tlsf_blk_t;
 
-tlsf_t *	tlsf_create(uintptr_t, size_t, bool);
+typedef enum {
+	TLSF_INT,
+	TLSF_EXT,
+} tlsf_mode_t;
+
+tlsf_t *	tlsf_create(uintptr_t, size_t, unsigned, tlsf_mode_t);
 void		tlsf_destroy(tlsf_t *);
 
 size_t		tlsf_avail_space(tlsf_t *);
