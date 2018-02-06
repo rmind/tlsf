@@ -59,13 +59,13 @@ The implementation is written in C99 and is distributed under the
 
 ## Caveats
 
-The TLSF-INT requires at word-aligned base pointer; it is also guarantees
+The TLSF-INT requires at least word-aligned base pointer; it also guarantees
 the word-aligned allocations.
 The allocator uses a minimum allocation unit of 32.  That is, any given
 sizes will be rounded up to the minimum block size (MBS) of 32 bytes/units.
 
 The maximum allocation size is limited to the half of the space represented
-by the s word size of the CPU architecture.  On 32-bit systems, it is 2^31
+by the word size of the CPU architecture.  On 32-bit systems, it is 2^31
 (~2 billion) and on 64-bit systems it is 2^63.
 
 ## Example
