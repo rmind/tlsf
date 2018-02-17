@@ -73,6 +73,8 @@ by the word size of the CPU architecture.  On 32-bit systems, it is 2^31
 The following is an illustration of using TLSF as a memory allocator backed
 by a memory-mapped area:
 ```c
+#include <tlsf.h>
+
 tlsf_t *tlsf;
 void *baseptr;
 struct obj *obj;
@@ -115,3 +117,9 @@ if (blk) {
 	tlsf_ext_free(tlsf, blk);
 }
 ```
+
+## Packages
+
+Just build the package, install it and link the library using the
+`-ltlsf` flag.
+* RPM (tested on RHEL/CentOS 7): `cd pkg && make rpm`

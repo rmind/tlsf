@@ -1,5 +1,8 @@
 /*
- * This file is in the public domain.
+ * Copyright (c) 2018 Mindaugas Rasiukevicius <rmind at noxt eu>
+ * All rights reserved.
+ *
+ * Use is subject to license terms, as specified in the LICENSE file.
  */
 
 #include <stdio.h>
