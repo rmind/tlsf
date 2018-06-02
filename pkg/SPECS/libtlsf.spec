@@ -1,5 +1,7 @@
+%define version	%(cat %{_topdir}/version.txt)
+
 Name:		libtlsf
-Version:	0.1.1
+Version:	%{version}
 Release:	1%{?dist}
 Summary:	TLSF: two-level segregated fit O(1) allocator
 Group:		System Environment/Libraries

@@ -1,0 +1,34 @@
+Source: tlsf
+Priority: extra
+Maintainer: https://github.com/rmind
+Build-Depends:
+ debhelper (>= 9),
+ make,
+ libtool
+Standards-Version: 3.9.1
+Homepage: https://github.com/rmind/tlsf
+License: BSD-2-clause
+
+Package: libtlsf1
+Section: lib
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: TLSF -- two-level segregated fit O(1) allocator library
+ TLSF: two-level segregated fit allocator which guarantees O(1) time.
+ This implementation also provides a variation, let's call it TLSF-EXT,
+ supporting the externalised block header allocation.  Therefore, it can
+ be used to manage arbitrary resources, e.g. address or disk space.
+
+Package: libtlsf1-dbg
+Section: debug
+Architecture: any
+Depends: ${misc:Depends}, libtlsf1 (= ${binary:Version})
+Description: Debug symbols for libtlsf1
+ Debug symbols for libtlsf1.
+
+Package: libtlsf-dev
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libtlsf1 (= ${binary:Version})
+Description: Development files for libtlsf1
+ Development files for libtlsf1.

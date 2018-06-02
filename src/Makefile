@@ -2,7 +2,9 @@
 # This file is in the Public Domain.
 #
 
-CFLAGS=		-std=c99 -O2 -g -W -Wextra -Werror
+PROJ=		tlsf
+
+CFLAGS+=	-std=c99 -O2 -g -Wall -Wextra -Werror
 CFLAGS+=	-D_POSIX_C_SOURCE=200809L
 CFLAGS+=	-D_GNU_SOURCE -D_DEFAULT_SOURCE
 
@@ -31,12 +33,12 @@ else
 CFLAGS+=	-DNDEBUG
 endif
 
-LIB=		libtlsf
+LIB=		lib$(PROJ)
 INCS=		tlsf.h
 
 OBJS=		tlsf.o
 
-$(LIB).la:	LDFLAGS+=	-rpath $(LIBDIR)
+$(LIB).la:	LDFLAGS+=	-rpath $(LIBDIR) -version-info 1:0:0
 install/%.la:	ILIBDIR=	$(DESTDIR)/$(LIBDIR)
 install:	IINCDIR=	$(DESTDIR)/$(INCDIR)/
 #install:	IMANDIR=	$(DESTDIR)/$(MANDIR)/man3/
@@ -60,12 +62,12 @@ install: $(addprefix install/,$(LIB).la)
 	mkdir -p $(IINCDIR) && install -c $(INCS) $(IINCDIR)
 	#mkdir -p $(IMANDIR) && install -c $(MANS) $(IMANDIR)
 
-tests: $(OBJS) t_tlsf.o
-	$(CC) $(CFLAGS) $^ -o t_tlsf
-	MALLOC_CHECK_=3 ./t_tlsf
+tests: $(OBJS) t_$(PROJ).o
+	$(CC) $(CFLAGS) $^ -o t_$(PROJ)
+	MALLOC_CHECK_=3 ./t_$(PROJ)
 
 clean:
 	libtool --mode=clean rm
-	rm -rf .libs *.o *.lo *.la t_tlsf
+	rm -rf .libs *.o *.lo *.la t_$(PROJ)
 
 .PHONY: all obj lib install tests clean

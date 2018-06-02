@@ -14,7 +14,7 @@ Reference:
 	TLSF: a new dynamic memory allocator for real-time systems.
 	In Proc. ECRTS (2004), IEEE Computer Society, pp. 79-86.
 
-The implementation is written in C99 and is distributed under the
+The implementation is written in C99 and distributed under the
 2-clause BSD license.
 
 ## API
@@ -123,3 +123,4 @@ if (blk) {
 Just build the package, install it and link the library using the
 `-ltlsf` flag.
 * RPM (tested on RHEL/CentOS 7): `cd pkg && make rpm`
+* DEB (tested on Debian 9): `cd pkg && make deb`
