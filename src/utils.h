@@ -40,7 +40,7 @@
  */
 
 #ifndef roundup2
-#define	roundup2(x, m)	(((x) + (m) - 1) & ~((m) - 1))
+#define	roundup2(x, m)		((((x) - 1) | ((m) - 1)) + 1)
 #endif
 
 /*

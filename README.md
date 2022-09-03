@@ -1,6 +1,6 @@
 # TLSF: two-level segregated fit O(1) allocator
 
-[![Build Status](https://travis-ci.org/rmind/tlsf.svg?branch=master)](https://travis-ci.org/rmind/tlsf)
+[![Build Status](https://travis-ci.com/rmind/tlsf.svg?branch=master)](https://app.travis-ci.com/github/rmind/tlsf)
 
 TLSF: two-level segregated fit allocator which guarantees O(1) time.
 This implementation provides two variations: _TLSF-INT_ which inlines the
